@@ -4376,4 +4376,9 @@ int			 json_find_object(struct json_node *, const char *,
 int			 json_find_array(struct json_node *, const char *,
 			     struct json_node **, char **);
 
+/* wcwidth_cjk */
+#undef wcwidth
+#define wcwidth wcwidth_cjk
+int		wcwidth_cjk(wchar_t ucs);
+
 #endif /* TMUX_H */
