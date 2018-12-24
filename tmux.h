@@ -2758,4 +2758,9 @@ struct window_pane *spawn_pane(struct spawn_context *, char **);
 /* regsub.c */
 char		*regsub(const char *, const char *, const char *, int);
 
+/* wcwidth_cjk */
+#undef wcwidth
+#define wcwidth wcwidth_cjk
+int		wcwidth_cjk(wchar_t ucs);
+
 #endif /* TMUX_H */
