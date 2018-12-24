@@ -3645,4 +3645,9 @@ struct hyperlinks	*hyperlinks_copy(struct hyperlinks *);
 void			 hyperlinks_reset(struct hyperlinks *);
 void			 hyperlinks_free(struct hyperlinks *);
 
+/* wcwidth_cjk */
+#undef wcwidth
+#define wcwidth wcwidth_cjk
+int		wcwidth_cjk(wchar_t ucs);
+
 #endif /* TMUX_H */
