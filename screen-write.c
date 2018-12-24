@@ -1410,6 +1410,7 @@ screen_write_cell(struct screen_write_ctx *ctx, const struct grid_cell *gc)
 	ctx->cells++;
 
 	/* If the width is zero, combine onto the previous character. */
+	/*
 	if (width == 0) {
 		screen_write_collect_flush(ctx, 0);
 		if ((gc = screen_write_combine(ctx, &gc->data, &xx)) != 0) {
@@ -1422,6 +1423,7 @@ screen_write_cell(struct screen_write_ctx *ctx, const struct grid_cell *gc)
 		}
 		return;
 	}
+	*/
 
 	/* Flush any existing scrolling. */
 	screen_write_collect_flush(ctx, 1);
