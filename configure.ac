@@ -593,9 +593,13 @@ case "$host_os" in
 		AC_MSG_RESULT(hpux)
 		PLATFORM=hpux
 		;;
-	*cygwin*|*msys*)
+	*cygwin*)
 		AC_MSG_RESULT(cygwin)
 		PLATFORM=cygwin
+		;;
+	*msys*)
+		AC_MSG_RESULT(msys)
+		PLATFORM=msys
 		;;
 	*)
 		AC_MSG_RESULT(unknown)

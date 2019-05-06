@@ -539,7 +539,7 @@ const struct options_table_entry options_table[] = {
 	  .scope = OPTIONS_TABLE_SESSION,
 	  .flags = OPTIONS_TABLE_IS_ARRAY,
 	  .default_str = "DISPLAY KRB5CCNAME SSH_ASKPASS SSH_AUTH_SOCK "
-	  		 "SSH_AGENT_PID SSH_CONNECTION WINDOWID XAUTHORITY"
+	  		 "SSH_AGENT_PID SSH_CONNECTION WINDOWID XAUTHORITY MSYSTEM"
 	},
 
 	{ .name = "visual-activity",
