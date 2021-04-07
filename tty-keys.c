@@ -57,6 +57,8 @@ static int	tty_keys_device_attributes(struct tty *, const char *, size_t,
 		    size_t *);
 static int	tty_keys_extended_device_attributes(struct tty *, const char *,
 		    size_t, size_t *);
+static int	tty_keys_operating_system_commands(struct tty *, const char *,
+        size_t, size_t *);
 
 /* Default raw keys. */
 struct tty_default_key_raw {
@@ -698,6 +700,15 @@ tty_keys_next(struct tty *tty)
 		goto partial_key;
 	}
 
+  switch (tty_keys_operating_system_commands(tty, buf, len, &size)) {
+	case 0:		/* yes */
+    key = KEYC_UNKNOWN;
+		goto complete_key;
+	case -1:	/* no, or not valid */
+		break;
+	case 1:		/* partila */
+		goto partial_key;
+  }
 	/* Is this a mouse key press? */
 	switch (tty_keys_mouse(tty, buf, len, &size, &m)) {
 	case 0:		/* yes */
@@ -1327,5 +1338,112 @@ tty_keys_extended_device_attributes(struct tty *tty, const char *buf,
 	tty_update_features(tty);
 	tty->flags |= TTY_HAVEXDA;
 
+	return (0);
+}
+
+/*
+ * Handle operating system commands response. Returns 0 for success, -1
+ * for failure, 1 for partial;
+ */
+static int
+tty_keys_operating_system_commands(__unused struct tty *tty, const char *buf,
+    size_t len, size_t *size)
+{
+  size_t	end;
+  int		pt = 0;
+  int		num_components = 3;
+  int		component = 0;
+  int		done = 0;
+  int		bad = 0;
+
+	*size = 0;
+
+	/* First two bytes are always \033]. */
+	if (buf[0] != '\033')
+		return (-1);
+	if (len == 1)
+		return (1);
+	if (buf[1] != ']')
+		return (-1);
+	if (len == 2)
+		return (1);
+
+  for (end = 2; end < len; end++) {
+    if (buf[end] >= '0' && buf[end] <= '9') {
+      pt = pt * 10 + buf[end] - '0';
+    } else if (buf[end] == ';') {
+      end++;
+      break;
+    } else {
+      return (-1);
+    }
+  }
+
+  if (end == len)
+    return (1);
+
+  if (pt != 4 && pt != 5 && pt != 10 && pt != 11 && pt != 15 && pt != 16)
+    return (-1);
+
+  if (pt == 5) {
+    if (!(buf[end] >= '0' && buf[end] <= '5'))
+      return (-1);
+    if (len == ++end)
+      return (1);
+    if (buf[end] != ';')
+      return (-1);
+    if (len == ++end)
+      return (1);
+  }
+
+  if (buf[end++] != 'r')
+    return (-1);
+  if (end == len)
+    return (1);
+  if (buf[end++] != 'g')
+    return (-1);
+  if (end == len)
+    return (1);
+  if (buf[end++] != 'b')
+    return (-1);
+  if (end == len)
+    return (1);
+  if (buf[end] == 'a') {
+    end++;
+    num_components = 4;
+  }
+  if (buf[end++] != ':')
+    return (-1);
+  if (end == len)
+    return (1);
+
+  for (; end < len; end++) {
+    if (buf[end] == '\x07') {
+      done = 1;
+      break;
+    } else if (buf[end] == '\x1b') {
+      if (++end == len)
+        return (1);
+      if (buf[end] == '\\') {
+        done = 1;
+        break;
+      }
+      return (-1);
+    } else if (buf[end] == '/') {
+      component++;
+    } else if (!((buf[end] >= '0' && buf[end] <= '0')
+          || (buf[end] >= 'a' && buf[end] <= 'f')
+          || (buf[end] >= 'A' && buf[end] <= 'F'))) {
+      bad = 1;
+    }
+  }
+
+  if (!done)
+    return (1);
+
+  if (bad || component != num_components - 1)
+    return (-1);
+
+  *size = end + 1;
 	return (0);
 }
